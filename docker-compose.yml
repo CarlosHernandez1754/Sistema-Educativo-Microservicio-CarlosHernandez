@@ -1,0 +1,67 @@
+
+version: '3.9'
+
+services:
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - red-educativa
+
+  config-server:
+    build: ./servidor-de-configuracion
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - eureka-server
+    networks:
+      - red-educativa
+
+  usuarios-servicio:
+    build: ./usuarios-servicio
+    container_name: usuarios-servicio
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - red-educativa
+
+  asignaturas-servicio:
+    build: ./asignaturas-servicio
+    container_name: asignaturas-servicio
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - red-educativa
+
+  matriculas-servicio:
+    build: ./matriculas-servicio
+    container_name: matriculas-servicio
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    depends_on:
+      - usuarios-servicio
+      - asignaturas-servicio
+      - config-server
+      - eureka-server
+    networks:
+      - red-educativa
+
+networks:
+  red-educativa:
+    driver: bridge
